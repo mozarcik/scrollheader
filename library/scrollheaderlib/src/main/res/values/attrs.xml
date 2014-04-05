@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PagerSlidingTabStrip">
+        <attr name="indicatorColor" format="color" />
+        <attr name="underlineColor" format="color" />
+        <attr name="dividerColor" format="color" />
+        <attr name="indicatorHeight" format="dimension" />
+        <attr name="underlineHeight" format="dimension" />
+        <attr name="dividerPadding" format="dimension" />
+        <attr name="tabPaddingLeftRight" format="dimension" />
+        <attr name="scrollOffset" format="dimension" />
+        <attr name="tabBackground" format="reference" />
+        <attr name="shouldExpand" format="boolean" />
+        <attr name="textAllCaps" format="boolean" />
+        <attr name="tabStripHeight" format="dimension" />
+        <attr name="tabTextColor" format="color" />
+        <attr name="parallax" format="boolean" />
+        <attr name="android:minHeight" />
+        <attr name="android:background" />
+    </declare-styleable>
+
+    <declare-styleable name="CarouselContainer">
+        <attr name="android:minHeight" />
+    </declare-styleable>
+
+    <declare-styleable name="ListHeader">
+        <attr name="blurBackground" format="boolean"/>
+        <attr name="kenBurnsEffect" format="boolean"/>
+        <attr name="parallaxEffect" format="boolean"/>
+        <attr name="iconSize" format="dimension"/>
+        <attr name="frameColor" format="color"/>
+        <attr name="strokeWidth" format="dimension" />
+        <attr name="frameShadowColor" format="color" />
+        <attr name="shadowRadius" format="dimension" />
+        <attr name="highlightColor" format="color" />
+        <attr name="android:minHeight" />
+        <attr name="android:icon" />
+    </declare-styleable>
+</resources>

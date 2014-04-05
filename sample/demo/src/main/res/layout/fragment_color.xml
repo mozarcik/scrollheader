@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<pl.motyczko.scrollheader.views.ObservableScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@id/scroll_view"
+            android:clipToPadding="false"
+    >
+
+    <TextView android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:padding="8dip"
+        android:text="@string/very_long_text">
+
+    </TextView>
+</pl.motyczko.scrollheader.views.ObservableScrollView>

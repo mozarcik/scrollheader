@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="scroll_view" type="id">999999</item>
+    <item name="page_tag" type="id">9999990</item>
+</resources>

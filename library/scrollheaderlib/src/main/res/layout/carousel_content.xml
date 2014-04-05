@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/carousel_tab_one"
+            layout="@layout/carousel_tab"/>
+
+        <include
+            android:id="@+id/carousel_tab_two"
+            layout="@layout/carousel_tab"/>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/carousel_image_shadow_height"
+        android:background="?android:attr/windowContentOverlay"/>
+
+</LinearLayout>
