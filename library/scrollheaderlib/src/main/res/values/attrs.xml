@@ -14,9 +14,21 @@
         <attr name="textAllCaps" format="boolean" />
         <attr name="tabStripHeight" format="dimension" />
         <attr name="tabTextColor" format="color" />
-        <attr name="parallax" format="boolean" />
         <attr name="android:minHeight" />
         <attr name="android:background" />
+        <attr name="android:icon" />
+
+        <!-- TODO: combine those attributes with ListHeader attributes -->
+        <attr name="blurBackground_a" format="boolean" />
+        <attr name="kenBurnsEffect_a" format="boolean"/>
+        <attr name="parallaxEffect_a" format="boolean"/>
+        <attr name="iconSize_a" format="dimension"/>
+        <attr name="frameColor_a" format="color"/>
+        <attr name="strokeWidth_a" format="dimension" />
+        <attr name="frameShadowColor_a" format="color" />
+        <attr name="shadowRadius_a" format="dimension" />
+        <attr name="highlightColor_a" format="color" />
+
     </declare-styleable>
 
     <declare-styleable name="CarouselContainer">
@@ -24,7 +36,7 @@
     </declare-styleable>
 
     <declare-styleable name="ListHeader">
-        <attr name="blurBackground" format="boolean"/>
+        <attr name="blurBackground" format="boolean" />
         <attr name="kenBurnsEffect" format="boolean"/>
         <attr name="parallaxEffect" format="boolean"/>
         <attr name="iconSize" format="dimension"/>

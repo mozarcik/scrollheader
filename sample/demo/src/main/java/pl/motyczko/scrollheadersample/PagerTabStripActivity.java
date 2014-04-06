@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 
+import pl.motyczko.scrollheader.PagerSlidingTabStrip;
+
 
 public class PagerTabStripActivity extends FragmentActivity {
 
@@ -29,6 +31,9 @@ public class PagerTabStripActivity extends FragmentActivity {
         final ViewPager carouselPager = (ViewPager) findViewById(R.id.carousel_pager);
         // This is used to communicate between the pager and header
         carouselPager.setAdapter(pagerAdapter);
+
+        PagerSlidingTabStrip header = (PagerSlidingTabStrip) findViewById(R.id.view_pager_header);
+        header.setActionBar(getActionBar());
     }
 
 }

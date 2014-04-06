@@ -17,20 +17,23 @@
 package pl.motyczko.scrollheader;
 
 import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.SparseArray;
@@ -39,6 +42,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.HorizontalScrollView;
@@ -46,18 +50,26 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import pl.motyczko.scrollheader.helpers.PageScrollHelper;
-import pl.motyczko.scrollheader.helpers.PageScrollListener;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.ObjectAnimator;
 import com.nineoldandroids.animation.ValueAnimator;
 
 import java.util.Locale;
 
+import pl.motyczko.scrollheader.drawables.BlurDrawable;
+import pl.motyczko.scrollheader.drawables.CircleFramedDrawable;
+import pl.motyczko.scrollheader.drawables.KenBurnsDrawable;
+import pl.motyczko.scrollheader.helpers.AlphaForegroundColorSpan;
+import pl.motyczko.scrollheader.helpers.PageScrollHelper;
+import pl.motyczko.scrollheader.helpers.PageScrollListener;
+
+
+/**
+ * TODO: extend from ListHeader and add tabs as container view
+ */
 public class PagerSlidingTabStrip extends HorizontalScrollView {
 
     private static final String LOG_TAG = "PagerSlidingTabStrip";
-    private final Drawable mBackground;
     private Matrix mDrawMatrix;
     private class Coordinate{
         public float y = 0.0f;
@@ -119,6 +131,29 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
     private boolean mParallaxForBackground = true;
 
+
+
+    private int mFrameColor = 0xffffffff;
+    private float mStrokeWidth = 2;
+    private int mFrameShadowColor = 0x80000000;
+    private float mShadowRadius = 6;
+    private int mHighlightColor = 0xffffffff;
+    private boolean mKenBurnsEffect = false;
+    private Drawable mBackgroundDrawable;
+    private ActionBar mActionBar;
+    private Interpolator mActionBarTitleInterpolator;
+
+    private final PageListener mPageScrollListener = new PageListener();
+
+    private Paint mPaint = new Paint();
+    private boolean mBlurBackground = false;
+    private boolean mKenBurnsInitialized;
+    private Drawable mIcon;
+    private int mIconSize = 80;
+    private int mActionBarIconSize = 48;
+    private SpannableString mSpannableString;
+    private AlphaForegroundColorSpan mAlphaForegroundColorSpan;
+
 	public PagerSlidingTabStrip(Context context) {
 		this(context, null);
 	}
@@ -144,8 +179,12 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		tabTextSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, tabTextSize, dm);
 		tabStripHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, tabStripHeight, dm);
 		mMinHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mMinHeight, dm);
+        mIconSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mIconSize, dm);
+        mStrokeWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mStrokeWidth, dm);
+        mShadowRadius = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mShadowRadius, dm);
+        mActionBarIconSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mActionBarIconSize, dm);
 
-		// get system attrs (android:textSize and android:textColor)
+        // get system attrs (android:textSize and android:textColor)
 
 		TypedArray a = context.obtainStyledAttributes(attrs, ATTRS);
 
@@ -172,10 +211,16 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		shouldExpand = a.getBoolean(R.styleable.PagerSlidingTabStrip_shouldExpand, shouldExpand);
 		scrollOffset = a.getDimensionPixelSize(R.styleable.PagerSlidingTabStrip_scrollOffset, scrollOffset);
 		textAllCaps = a.getBoolean(R.styleable.PagerSlidingTabStrip_textAllCaps, textAllCaps);
-		mParallaxForBackground = a.getBoolean(R.styleable.PagerSlidingTabStrip_parallax, mParallaxForBackground);
-		mBackground = a.getDrawable(R.styleable.PagerSlidingTabStrip_android_background);
-        mBackground.setColorFilter(0x44000000, PorterDuff.Mode.SRC_OVER);
-        setBackgroundColor(0);
+        mBlurBackground = a.getBoolean(R.styleable.PagerSlidingTabStrip_blurBackground_a, mBlurBackground);
+        mKenBurnsEffect = a.getBoolean(R.styleable.PagerSlidingTabStrip_kenBurnsEffect_a, mKenBurnsEffect);
+        mParallaxForBackground = a.getBoolean(R.styleable.PagerSlidingTabStrip_parallaxEffect_a, mParallaxForBackground);
+        mIconSize = a.getDimensionPixelSize(R.styleable.PagerSlidingTabStrip_iconSize_a, mIconSize);
+        mIcon = a.getDrawable(R.styleable.PagerSlidingTabStrip_android_icon);
+        mFrameColor = a.getColor(R.styleable.PagerSlidingTabStrip_frameColor_a, mFrameColor);
+        mStrokeWidth = a.getDimension(R.styleable.PagerSlidingTabStrip_strokeWidth_a, mStrokeWidth);
+        mFrameShadowColor = a.getColor(R.styleable.PagerSlidingTabStrip_frameShadowColor_a, mFrameShadowColor);
+        mShadowRadius = a.getDimension(R.styleable.PagerSlidingTabStrip_shadowRadius_a, mShadowRadius);
+        mHighlightColor = a.getColor(R.styleable.PagerSlidingTabStrip_highlightColor_a, mHighlightColor);
 
         a.recycle();
 
@@ -200,6 +245,43 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
         lp.gravity = Gravity.BOTTOM;
         tabsContainer.setLayoutParams(lp);
         addView(tabsContainer);
+
+        if (mIcon instanceof BitmapDrawable) {
+            mIcon = new CircleFramedDrawable(((BitmapDrawable) mIcon).getBitmap(), mIconSize,
+                    mFrameColor, mStrokeWidth, mFrameShadowColor, mShadowRadius,
+                    mHighlightColor);
+            mIcon.setBounds(0, 0, mIconSize, mIconSize);
+        }
+
+        if (mBlurBackground && mKenBurnsEffect) {
+            throw new IllegalStateException("Blur and Ken Burns effect cannot be used together!");
+        }
+        mBackgroundDrawable = getBackground();
+        setBackgroundColor(0);
+
+        a.recycle();
+        mPageScrollHelper = new PageScrollHelper(this);
+        mPageScrollHelper.setPageScrollListener(mPageScrollListener);
+        if (mBlurBackground) {
+            mBackgroundDrawable = new BlurDrawable(((BitmapDrawable) mBackgroundDrawable).getBitmap(), getContext());
+        }
+        if (mKenBurnsEffect) {
+            mBackgroundDrawable = new KenBurnsDrawable(mBackgroundDrawable);
+            mBackgroundDrawable.setCallback(this);
+        }
+    }
+
+    public void setActionBar(ActionBar actionBar) {
+        if (mIcon == null)
+            return;
+
+        mActionBar = actionBar;
+        if (mActionBar == null)
+            return;
+
+        mActionBar.setIcon(R.drawable.transparent_actionbar_icon);
+        mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(0xffffffff);
+        mActionBarTitleInterpolator = new AccelerateInterpolator();
     }
 
     @Override
@@ -210,6 +292,17 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
         View parent = (View) getParent();
         if (parent instanceof ViewPager)
             setViewPager((ViewPager) parent);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (mBackgroundDrawable instanceof KenBurnsDrawable)
+            ((KenBurnsDrawable) mBackgroundDrawable).stopAnimation();
+    }
+
+    protected boolean verifyDrawable(Drawable who) {
+        return who == mBackgroundDrawable;
     }
 
     @Override
@@ -357,9 +450,9 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
     private void calculateBackgroundBounds() {
         mDrawMatrix = new Matrix();
-        int dwidth = mBackground.getIntrinsicWidth();
-        int dheight = mBackground.getIntrinsicHeight();
-        mBackground.setBounds(0, 0, dwidth, dheight);
+        int dwidth = mBackgroundDrawable.getIntrinsicWidth();
+        int dheight = mBackgroundDrawable.getIntrinsicHeight();
+        mBackgroundDrawable.setBounds(0, 0, dwidth, dheight);
 
         int vwidth = getWidth();
         int vheight = getHeight();//mParallaxForBackground ? (int) (getHeight() - getTranslationY()) : getHeight();
@@ -380,10 +473,15 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
     }
 
     private void drawBackground(Canvas canvas) {
-        if (mBackground == null)
+        if (mBackgroundDrawable == null)
             return;
 
-        if (mDrawMatrix == null) {
+        if (mBackgroundDrawable instanceof KenBurnsDrawable && !mKenBurnsInitialized) {
+            mBackgroundDrawable.setBounds(0,0,getWidth(), getHeight());
+            ((KenBurnsDrawable) mBackgroundDrawable).animate();
+            mKenBurnsInitialized = true;
+        }
+        if (mDrawMatrix == null && !(mBackgroundDrawable instanceof KenBurnsDrawable)) {
             calculateBackgroundBounds();
         }
         int saveCount = canvas.getSaveCount();
@@ -393,8 +491,53 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
         if (mDrawMatrix != null) {
             canvas.concat(mDrawMatrix);
         }
-        mBackground.draw(canvas);
+        mBackgroundDrawable.draw(canvas);
         canvas.restoreToCount(saveCount);
+        if (mActionBar != null) {
+            setActionBarTitle();
+        }
+        if (mIcon != null) {
+            canvas.save();
+            float translationX = calculateIconTranslationX();
+            float translationY = calculateIconTranslationY();
+            canvas.translate(translationX, translationY);
+            float scale = calculateIconScale();
+            canvas.scale(scale, scale);
+            mIcon.draw(canvas);
+            canvas.restore();
+        }
+    }
+
+    private void setActionBarTitle() {
+        float fraction = Math.abs(getTranslationY()/getAllowedVerticalScrollLength());
+        if (mSpannableString == null)
+            mSpannableString = new SpannableString(mActionBar.getTitle());
+        mAlphaForegroundColorSpan.setAlpha(mActionBarTitleInterpolator.getInterpolation(fraction));
+        mSpannableString.setSpan(mAlphaForegroundColorSpan, 0, mSpannableString.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mActionBar.setTitle(mSpannableString);
+    }
+
+
+    private float calculateIconTranslationX() {
+        int width = getWidth();
+
+        float fraction = Math.abs(getTranslationY()/getAllowedVerticalScrollLength());
+
+        return getScrollX() + (1-fraction)*(width / 2 - mIconSize / 2);
+    }
+
+    private float calculateIconTranslationY() {
+        int height = getHeight();
+        float iconScale = calculateIconScale();
+        float fraction = Math.abs(getTranslationY()/getAllowedVerticalScrollLength());
+        return (1-fraction)*(height / 2 - mIconSize*iconScale/2) - getTranslationY();
+    }
+
+    private float calculateIconScale() {
+        float fraction = Math.abs(getTranslationY()/getAllowedVerticalScrollLength());
+        float minSize = (float)mActionBarIconSize/(float)mIconSize;
+        float scale = 1 - (1 - minSize) * fraction;
+        return scale;
     }
 
 	@Override
@@ -653,8 +796,6 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
             currentPosition = position;
             currentPositionOffset = positionOffset;
 
-//            Log.i(LOG_TAG, String.format("pos: %d, off: %.2f", position, positionOffset));
-
             scrollToChild(position, (int) (positionOffset * tabsContainer.getChildAt(position).getWidth()));
 
             invalidate();
@@ -668,12 +809,9 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
         public void onPageScrollStateChanged(int state) {
             if (state == ViewPager.SCROLL_STATE_IDLE) {
                 Coordinate coord = mCoordinates.get(pager.getCurrentItem());
-//                Log.i(LOG_TAG, "Get tag: " + coord);
                 if (coord != null && pager.findViewWithTag(coord) == null) {
-//                    Log.i(LOG_TAG, "View with tag not found!");
                     mCoordinates.remove(pager.getCurrentItem());
                 }
-//                Log.i(LOG_TAG, String.format("state changed, current: %d", pager.getCurrentItem()));
                 restoreYCoordinate(75, pager.getCurrentItem());
                 scrollToChild(pager.getCurrentItem(), 0);
             }
@@ -693,15 +831,10 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
         @Override public void onPageVerticalScroll(View v, int currentPage, int offset) {
             final float amtToScroll = Math.max(offset, -getAllowedVerticalScrollLength());
             moveToYCoordinate(currentPage, amtToScroll);
-//            Log.i(LOG_TAG, "Set tag to view: " + mCoordinates.get(currentPage));
             v.setTag(mCoordinates.get(currentPage));
         }
 
         @Override public void onScrollStateChanged(int currentPage, int scrollState) {
-            if (scrollState == PageScrollListener.SCROLL_STATE_IDLE) {
-//                Log.i(LOG_TAG,"listview current: " + currentPage);
-//                restoreYCoordinate(75, currentPage);
-            }
         }
     }
 
@@ -741,7 +874,6 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
      */
     public void restoreYCoordinate(int duration, int tabIndex) {
         final float storedYCoordinate = getStoredYCoordinateForTab(tabIndex);
-//        Log.i(LOG_TAG, String.format("page: %d, coord: %.2f, trans: %.2f", tabIndex, storedYCoordinate, getTranslationY()));
         if (getTranslationY() == storedYCoordinate || mIsAnimating)
             return;
         if (duration == 0) {
@@ -790,7 +922,6 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
      * @param y The Y cooridinate to move to
      */
     public void moveToYCoordinate(int tabIndex, float y) {
-//        Log.i(LOG_TAG, String.format("Move to %.2f, %d", y, tabIndex));
         storeYCoordinate(tabIndex, y);
         restoreYCoordinate(0, tabIndex);
     }

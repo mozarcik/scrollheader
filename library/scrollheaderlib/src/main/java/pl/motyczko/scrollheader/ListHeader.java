@@ -279,7 +279,9 @@ public class ListHeader extends FrameLayout {
 
     private float calculateIconTranslationY() {
         int height = getHeight();
-        return height / 2 - mIconSize*calculateIconScale() / 2 - getTranslationY()/2;
+        float iconScale = calculateIconScale();
+        float fraction = Math.abs(getTranslationY()/getAllowedVerticalScrollLength());
+        return (1-fraction)*(height / 2 - mIconSize*iconScale/2) - getTranslationY();
     }
 
     private float calculateIconScale() {

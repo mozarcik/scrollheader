@@ -14,13 +14,15 @@
             android:id="@+id/view_pager_header"
             android:layout_width="match_parent"
             android:layout_height="@dimen/header_height"
-            android:background="@drawable/princess_mononoke"
+            android:background="@drawable/multiple_backgrounds"
+            app:kenBurnsEffect_a="true"
+            android:icon="@drawable/totoro_avatar"
             android:minHeight="96dip"
             app:underlineColor="#eee"
             app:dividerColor="#eee"
             app:indicatorColor="#eee"
             app:tabTextColor="#eee"
-            app:parallax="true"
+            app:parallaxEffect_a="true"
             android:layout_gravity="center_horizontal"
             />
 
