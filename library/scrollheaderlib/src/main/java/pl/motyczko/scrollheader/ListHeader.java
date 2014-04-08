@@ -30,7 +30,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
@@ -41,7 +40,6 @@ import pl.motyczko.scrollheader.drawables.CircleFramedDrawable;
 import pl.motyczko.scrollheader.drawables.KenBurnsDrawable;
 import pl.motyczko.scrollheader.helpers.AlphaForegroundColorSpan;
 import pl.motyczko.scrollheader.helpers.PageScrollHelper;
-import pl.motyczko.scrollheader.helpers.PageScrollListener;
 import pl.motyczko.scrollheader.helpers.SimplePageScrollListener;
 import pl.motyczko.scrollheader.views.ObservableScrollView;
 
@@ -59,7 +57,7 @@ public class ListHeader extends FrameLayout {
     private ActionBar mActionBar;
     private Interpolator mActionBarTitleInterpolator;
 
-	private final PageListener mPageScrollListener = new PageListener();
+    private final PageListener mPageScrollListener = new PageListener();
 
     private boolean mParallaxForBackground = true;
     private Paint mPaint = new Paint();
@@ -71,32 +69,41 @@ public class ListHeader extends FrameLayout {
     private SpannableString mSpannableString;
     private AlphaForegroundColorSpan mAlphaForegroundColorSpan;
 
+    private PageScrollHelper mPageScrollHelper;
+
+    /**
+     * Minimum allowed height
+     */
+    private int mMinHeight = 0;
+
+    private boolean mIsAnimating = false;
 
     public ListHeader(Context context) {
-		this(context, null);
-	}
+        this(context, null);
+    }
 
-	public ListHeader(Context context, AttributeSet attrs) {
-		this(context, attrs, 0);
-	}
+    public ListHeader(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
 
-	public ListHeader(Context context, AttributeSet attrs, int defStyle) {
-		super(context, attrs, defStyle);
+    public ListHeader(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
 
-		setWillNotDraw(false);
+        setWillNotDraw(false);
 
-		DisplayMetrics dm = getResources().getDisplayMetrics();
+        DisplayMetrics dm = getResources().getDisplayMetrics();
 
-		mMinHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mMinHeight, dm);
-		mIconSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mIconSize, dm);
-		mStrokeWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mStrokeWidth, dm);
-		mShadowRadius = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mShadowRadius, dm);
+        mMinHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mMinHeight, dm);
+        mIconSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mIconSize, dm);
+        mStrokeWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mStrokeWidth, dm);
+        mShadowRadius = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mShadowRadius, dm);
         mActionBarIconSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mActionBarIconSize, dm);
-		// get custom attrs
+        // get custom attrs
 
-		TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ListHeader);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ListHeader);
+        if (a == null) return;
 
-		mMinHeight = a.getDimensionPixelSize(R.styleable.ListHeader_android_minHeight, mMinHeight);
+        mMinHeight = a.getDimensionPixelSize(R.styleable.ListHeader_android_minHeight, mMinHeight);
         mBlurBackground = a.getBoolean(R.styleable.ListHeader_blurBackground, mBlurBackground);
         mKenBurnsEffect = a.getBoolean(R.styleable.ListHeader_kenBurnsEffect, mKenBurnsEffect);
         mParallaxForBackground = a.getBoolean(R.styleable.ListHeader_parallaxEffect, mParallaxForBackground);
@@ -118,40 +125,21 @@ public class ListHeader extends FrameLayout {
         if (mBlurBackground && mKenBurnsEffect) {
             throw new IllegalStateException("Blur and Ken Burns effect cannot be used together!");
         }
+
         mBackgroundDrawable = getBackground();
         setBackgroundColor(0);
 
         a.recycle();
         mPageScrollHelper = new PageScrollHelper(this);
         mPageScrollHelper.setPageScrollListener(mPageScrollListener);
-        if (mBlurBackground) {
+
+        if (mBlurBackground)
             mBackgroundDrawable = new BlurDrawable(((BitmapDrawable) mBackgroundDrawable).getBitmap(), getContext());
-        }
+
         if (mKenBurnsEffect) {
             mBackgroundDrawable = new KenBurnsDrawable(mBackgroundDrawable);
             mBackgroundDrawable.setCallback(this);
         }
-    }
-
-    public void setActionBar(ActionBar actionBar) {
-        if (mIcon == null)
-            return;
-
-        mActionBar = actionBar;
-        if (mActionBar == null)
-            return;
-
-        mActionBar.setIcon(R.drawable.transparent_actionbar_icon);
-        mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(0xffffffff);
-        mActionBarTitleInterpolator = new AccelerateInterpolator();
-    }
-
-    public void setMinHeight(int minHeight) {
-        mMinHeight = minHeight;
-    }
-
-    public void setParallax(boolean parallax) {
-        mParallaxForBackground = parallax;
     }
 
     @Override
@@ -167,32 +155,22 @@ public class ListHeader extends FrameLayout {
             ((KenBurnsDrawable) mBackgroundDrawable).stopAnimation();
     }
 
-    public void setupViews() {
-        View v = (View) getParent();
-        if (v == null) return;
-        ListView listView = (ListView) v.findViewById(android.R.id.list);
-        if (listView != null) {
-            setListView(listView);
-        }
-
-        ObservableScrollView scrollView = (ObservableScrollView) v.findViewById(R.id.scroll_view);
-        if (scrollView != null) {
-            setScrollView(scrollView);
-        }
-    }
-
-    public void setListView(ListView listView) {
-        mPageScrollHelper.setupListView(getMeasuredHeight(), listView, true);
-    }
-
-    public void setScrollView(ObservableScrollView scrollView) {
-        mPageScrollHelper.setupScrollView(getMeasuredHeight(), scrollView, true);
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        setupViews();
     }
 
     @Override
-    protected void onMeasure (int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        setupViews();
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        drawBackground(canvas);
+        updateActionBar();
+        drawIcon(canvas);
+    }
+
+    protected boolean verifyDrawable(Drawable who) {
+        return who == mBackgroundDrawable;
     }
 
     private void calculateBackgroundBounds() {
@@ -220,16 +198,12 @@ public class ListHeader extends FrameLayout {
         mDrawMatrix.postTranslate((int) (dx + 0.5f), (int) (dy + 0.5f));
     }
 
-    protected boolean verifyDrawable(Drawable who) {
-        return who == mBackgroundDrawable;
-    }
-
     private void drawBackground(Canvas canvas) {
         if (mBackgroundDrawable == null)
             return;
 
         if (mBackgroundDrawable instanceof KenBurnsDrawable && !mKenBurnsInitialized) {
-            mBackgroundDrawable.setBounds(0,0,getWidth(), getHeight());
+            mBackgroundDrawable.setBounds(0, 0, getWidth(), getHeight());
             ((KenBurnsDrawable) mBackgroundDrawable).animate();
             mKenBurnsInitialized = true;
         }
@@ -238,93 +212,104 @@ public class ListHeader extends FrameLayout {
         }
         int saveCount = canvas.getSaveCount();
         canvas.save();
-        float translation = mParallaxForBackground ? getTranslationY()/2 : 0;
+        float translation = mParallaxForBackground ? getTranslationY() / 2 : 0;
         canvas.translate(getScrollX(), getScrollY() - translation);
         if (mDrawMatrix != null) canvas.concat(mDrawMatrix);
         mBackgroundDrawable.draw(canvas);
         canvas.restoreToCount(saveCount);
-
-        if (mActionBar != null) {
-            setActionBarTitle();
-        }
-        if (mIcon != null) {
-            canvas.save();
-            float translationX = calculateIconTranslationX();
-            float translationY = calculateIconTranslationY();
-            canvas.translate(translationX, translationY);
-            float scale = calculateIconScale();
-            canvas.scale(scale, scale);
-            mIcon.draw(canvas);
-            canvas.restore();
-        }
     }
 
-    private void setActionBarTitle() {
-        float fraction = Math.abs(getTranslationY()/getAllowedVerticalScrollLength());
+    private void drawIcon(Canvas canvas) {
+        if (mIcon == null)
+            return;
+        canvas.save();
+        float translationX = calculateIconTranslationX();
+        float translationY = calculateIconTranslationY();
+        canvas.translate(translationX, translationY);
+        float scale = calculateIconScale();
+        canvas.scale(scale, scale);
+        mIcon.draw(canvas);
+        canvas.restore();
+    }
+
+    private void updateActionBar() {
+        if (mActionBar == null)
+            return;
+
+        float fraction = Math.abs(getTranslationY() / getAllowedVerticalScrollLength());
+
         if (mSpannableString == null)
             mSpannableString = new SpannableString(mActionBar.getTitle());
+
         mAlphaForegroundColorSpan.setAlpha(mActionBarTitleInterpolator.getInterpolation(fraction));
         mSpannableString.setSpan(mAlphaForegroundColorSpan, 0, mSpannableString.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         mActionBar.setTitle(mSpannableString);
     }
 
-
     private float calculateIconTranslationX() {
         int width = getWidth();
 
-        float fraction = Math.abs(getTranslationY()/getAllowedVerticalScrollLength());
+        float fraction = Math.abs(getTranslationY() / getAllowedVerticalScrollLength());
 
-        return (1-fraction)*(width / 2 - mIconSize / 2);
+        return (1 - fraction) * (width / 2 - mIconSize / 2);
     }
 
     private float calculateIconTranslationY() {
         int height = getHeight();
         float iconScale = calculateIconScale();
-        float fraction = Math.abs(getTranslationY()/getAllowedVerticalScrollLength());
-        return (1-fraction)*(height / 2 - mIconSize*iconScale/2) - getTranslationY();
+        float fraction = Math.abs(getTranslationY() / getAllowedVerticalScrollLength());
+        return (1 - fraction) * (height / 2 - mIconSize * iconScale / 2) - getTranslationY();
     }
 
     private float calculateIconScale() {
-        float fraction = Math.abs(getTranslationY()/getAllowedVerticalScrollLength());
-        float minSize = (float)mActionBarIconSize/(float)mIconSize;
+        float fraction = Math.abs(getTranslationY() / getAllowedVerticalScrollLength());
+        float minSize = (float) mActionBarIconSize / (float) mIconSize;
         float scale = 1 - (1 - minSize) * fraction;
         return scale;
     }
 
-    @Override
-	protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        drawBackground(canvas);
-	}
+    public void setActionBar(ActionBar actionBar) {
+        if (mIcon == null)
+            return;
 
-    public void setHeight(int height) {
-        ViewGroup.LayoutParams lp = getLayoutParams();
-        lp.height = height;
-        setLayoutParams(lp);
-        getParent().requestLayout();
+        mActionBar = actionBar;
+        if (mActionBar == null)
+            return;
+
+        mActionBar.setIcon(R.drawable.transparent_actionbar_icon);
+        mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(0xffffffff);
+        mActionBarTitleInterpolator = new AccelerateInterpolator();
     }
 
+    public void setMinHeight(int minHeight) {
+        mMinHeight = minHeight;
+    }
 
-    private class PageListener extends SimplePageScrollListener {
-        @Override public void onPageVerticalScroll(View v, int currentPage, int offset) {
-            final float amtToScroll = Math.max(offset, -getAllowedVerticalScrollLength());
-            moveToYCoordinate(amtToScroll);
+    public void setParallax(boolean parallax) {
+        mParallaxForBackground = parallax;
+    }
+
+    public void setupViews() {
+        View v = (View) getParent();
+        if (v == null) return;
+        ListView listView = (ListView) v.findViewById(android.R.id.list);
+        if (listView != null) {
+            setListView(listView);
         }
 
-        @Override public void onScrollStateChanged(int currentPage, int scrollState) {
-            if (scrollState == PageScrollListener.SCROLL_STATE_IDLE) {
-            }
+        ObservableScrollView scrollView = (ObservableScrollView) v.findViewById(R.id.scroll_view);
+        if (scrollView != null) {
+            setScrollView(scrollView);
         }
     }
 
-    private PageScrollHelper mPageScrollHelper;
+    public void setListView(ListView listView) {
+        mPageScrollHelper.setupListView(getMeasuredHeight(), listView, true);
+    }
 
-    /**
-     * Allowed vertical scroll length
-     */
-    private int mMinHeight = 0;
-
-    private boolean mIsAnimating = false;
+    public void setScrollView(ObservableScrollView scrollView) {
+        mPageScrollHelper.setupScrollView(getMeasuredHeight(), scrollView, true);
+    }
 
     /**
      * Request that the view move to the given Y coordinate. Also store the Y
@@ -336,7 +321,7 @@ public class ListHeader extends FrameLayout {
         if (getTranslationY() == y || mIsAnimating)
             return;
         if (mBlurBackground && mBackgroundDrawable instanceof BlurDrawable)
-            ((BlurDrawable) mBackgroundDrawable).blur(Math.abs(y/getAllowedVerticalScrollLength()));
+            ((BlurDrawable) mBackgroundDrawable).blur(Math.abs(y / getAllowedVerticalScrollLength()));
         setTranslationY(y);
         invalidate();
     }
@@ -349,5 +334,12 @@ public class ListHeader extends FrameLayout {
         return getMeasuredHeight() - mMinHeight;
     }
 
+    private class PageListener extends SimplePageScrollListener {
+        @Override public void onPageVerticalScroll(View v, int currentPage, int offset) {
+            final float amtToScroll = Math.max(offset, -getAllowedVerticalScrollLength());
+            moveToYCoordinate(amtToScroll);
+        }
 
+        @Override public void onScrollStateChanged(int currentPage, int scrollState) {}
+    }
 }

@@ -18,16 +18,15 @@
         <attr name="android:background" />
         <attr name="android:icon" />
 
-        <!-- TODO: combine those attributes with ListHeader attributes -->
-        <attr name="blurBackground_a" format="boolean" />
-        <attr name="kenBurnsEffect_a" format="boolean"/>
-        <attr name="parallaxEffect_a" format="boolean"/>
-        <attr name="iconSize_a" format="dimension"/>
-        <attr name="frameColor_a" format="color"/>
-        <attr name="strokeWidth_a" format="dimension" />
-        <attr name="frameShadowColor_a" format="color" />
-        <attr name="shadowRadius_a" format="dimension" />
-        <attr name="highlightColor_a" format="color" />
+        <attr name="blurBackground"  />
+        <attr name="kenBurnsEffect" />
+        <attr name="parallaxEffect" />
+        <attr name="iconSize" />
+        <attr name="frameColor" />
+        <attr name="strokeWidth" />
+        <attr name="frameShadowColor"  />
+        <attr name="shadowRadius" />
+        <attr name="highlightColor" />
 
     </declare-styleable>
 
@@ -36,16 +35,27 @@
     </declare-styleable>
 
     <declare-styleable name="ListHeader">
-        <attr name="blurBackground" format="boolean" />
-        <attr name="kenBurnsEffect" format="boolean"/>
-        <attr name="parallaxEffect" format="boolean"/>
-        <attr name="iconSize" format="dimension"/>
-        <attr name="frameColor" format="color"/>
-        <attr name="strokeWidth" format="dimension" />
-        <attr name="frameShadowColor" format="color" />
-        <attr name="shadowRadius" format="dimension" />
-        <attr name="highlightColor" format="color" />
+        <attr name="blurBackground" />
+        <attr name="kenBurnsEffect" />
+        <attr name="parallaxEffect" />
+        <attr name="iconSize" />
+        <attr name="frameColor"/>
+        <attr name="strokeWidth"  />
+        <attr name="frameShadowColor"  />
+        <attr name="shadowRadius"  />
+        <attr name="highlightColor"  />
         <attr name="android:minHeight" />
         <attr name="android:icon" />
     </declare-styleable>
+
+    <attr name="blurBackground" format="boolean" />
+    <attr name="kenBurnsEffect" format="boolean"/>
+    <attr name="parallaxEffect" format="boolean"/>
+    <attr name="iconSize" format="dimension"/>
+    <attr name="frameColor" format="color"/>
+    <attr name="strokeWidth" format="dimension" />
+    <attr name="frameShadowColor" format="color" />
+    <attr name="shadowRadius" format="dimension" />
+    <attr name="highlightColor" format="color" />
+
 </resources>
