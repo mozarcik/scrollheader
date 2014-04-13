@@ -34,7 +34,9 @@
         <attr name="android:minHeight" />
     </declare-styleable>
 
-    <declare-styleable name="ListHeader">
+    <declare-styleable name="ScrollHeader">
+        <attr name="overlayColorCollapsed" format="color" />
+        <attr name="overlayColorExpanded" format="color" />
         <attr name="blurBackground" />
         <attr name="kenBurnsEffect" />
         <attr name="parallaxEffect" />

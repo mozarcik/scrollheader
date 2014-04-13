@@ -64,7 +64,7 @@ import pl.motyczko.scrollheader.helpers.PageScrollHelper;
 import pl.motyczko.scrollheader.helpers.PageScrollListener;
 
 /**
- * TODO: extend from ListHeader and add tabs as container view
+ * TODO: extend from ScrollHeader and add tabs as container view
  */
 public class PagerSlidingTabStrip extends HorizontalScrollView {
     private static final String LOG_TAG = "PagerSlidingTabStrip";
