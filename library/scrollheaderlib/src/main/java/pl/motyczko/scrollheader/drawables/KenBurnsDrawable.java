@@ -78,7 +78,8 @@ public class KenBurnsDrawable extends Drawable implements Animator.AnimatorListe
     }
 
     public void stopAnimation() {
-        mAnimator.cancel();
+        if (mAnimator != null)
+            mAnimator.cancel();
         mAnimate = false;
     }
 

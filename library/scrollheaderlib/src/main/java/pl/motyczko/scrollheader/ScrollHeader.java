@@ -87,6 +87,7 @@ public class ScrollHeader extends FrameLayout {
     private int mMinHeight = 0;
 
     private boolean mIsAnimating = false;
+    private int mIconTopOffset = 0;
 
     public ScrollHeader(Context context) {
         this(context, null);
@@ -118,6 +119,7 @@ public class ScrollHeader extends FrameLayout {
         mKenBurnsEffect = a.getBoolean(R.styleable.ScrollHeader_kenBurnsEffect, mKenBurnsEffect);
         mParallaxForBackground = a.getBoolean(R.styleable.ScrollHeader_parallaxEffect, mParallaxForBackground);
         mIconSize = a.getDimensionPixelSize(R.styleable.ScrollHeader_iconSize, mIconSize);
+        mIconTopOffset = a.getDimensionPixelSize(R.styleable.ScrollHeader_iconTopOffset, mIconTopOffset);
         mIcon = a.getDrawable(R.styleable.ScrollHeader_android_icon);
         mFrameColor = a.getColor(R.styleable.ScrollHeader_frameColor, mFrameColor);
         mStrokeWidth = a.getDimension(R.styleable.ScrollHeader_strokeWidth, mStrokeWidth);
@@ -294,7 +296,7 @@ public class ScrollHeader extends FrameLayout {
         int height = getHeight();
         float iconScale = calculateIconScale();
         float fraction = Math.abs(getTranslationY() / getAllowedVerticalScrollLength());
-        return (1 - fraction) * (height / 2 - mIconSize * iconScale / 2) - getTranslationY();
+        return fraction * mIconTopOffset + (1 - fraction) * (height / 2 - mIconSize * iconScale / 2) - getTranslationY();
     }
 
     private float calculateIconScale() {

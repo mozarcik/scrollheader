@@ -41,6 +41,7 @@
         <attr name="kenBurnsEffect" />
         <attr name="parallaxEffect" />
         <attr name="iconSize" />
+        <attr name="iconTopOffset" />
         <attr name="frameColor"/>
         <attr name="strokeWidth"  />
         <attr name="frameShadowColor"  />
@@ -59,5 +60,6 @@
     <attr name="frameShadowColor" format="color" />
     <attr name="shadowRadius" format="dimension" />
     <attr name="highlightColor" format="color" />
+    <attr name="iconTopOffset" format="dimension" />
 
 </resources>
