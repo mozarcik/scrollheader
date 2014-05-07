@@ -18,10 +18,13 @@
         <attr name="android:background" />
         <attr name="android:icon" />
 
+        <attr name="overlayColorCollapsed" />
+        <attr name="overlayColorExpanded" />
         <attr name="blurBackground"  />
         <attr name="kenBurnsEffect" />
         <attr name="parallaxEffect" />
         <attr name="iconSize" />
+        <attr name="iconTopOffset" />
         <attr name="frameColor" />
         <attr name="strokeWidth" />
         <attr name="frameShadowColor"  />
@@ -35,8 +38,8 @@
     </declare-styleable>
 
     <declare-styleable name="ScrollHeader">
-        <attr name="overlayColorCollapsed" format="color" />
-        <attr name="overlayColorExpanded" format="color" />
+        <attr name="overlayColorCollapsed" />
+        <attr name="overlayColorExpanded" />
         <attr name="blurBackground" />
         <attr name="kenBurnsEffect" />
         <attr name="parallaxEffect" />
@@ -51,6 +54,9 @@
         <attr name="android:icon" />
     </declare-styleable>
 
+
+    <attr name="overlayColorCollapsed" format="color" />
+    <attr name="overlayColorExpanded" format="color" />
     <attr name="blurBackground" format="boolean" />
     <attr name="kenBurnsEffect" format="boolean"/>
     <attr name="parallaxEffect" format="boolean"/>

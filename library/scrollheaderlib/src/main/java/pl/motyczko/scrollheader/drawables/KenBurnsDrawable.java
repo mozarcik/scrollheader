@@ -37,6 +37,7 @@ public class KenBurnsDrawable extends Drawable implements Animator.AnimatorListe
     private float mNextTranslationY;
     private Animator mAnimator;
     private boolean mAnimate = false;
+    private ColorFilter mColorFilter;
 
     public KenBurnsDrawable(Drawable drawable) {
         mHeight = drawable.getIntrinsicHeight();
@@ -90,6 +91,7 @@ public class KenBurnsDrawable extends Drawable implements Animator.AnimatorListe
         canvas.translate(mTranslationX, mTranslationY);
         Drawable d = mDrawables[mCurrentDrawable];
         d.setAlpha(0xFF);
+        d.setColorFilter(mColorFilter);
         d.draw(canvas);
         canvas.restore();
         if ( mAlpha != 0) {
@@ -98,6 +100,7 @@ public class KenBurnsDrawable extends Drawable implements Animator.AnimatorListe
             canvas.scale(mNextScale, mNextScale);
             canvas.translate(mNextTranslationX, mNextTranslationY);
             d.setAlpha(mAlpha);
+            d.setColorFilter(mColorFilter);
             d.draw(canvas);
             d.setAlpha(0xFF);
             canvas.restore();
@@ -114,7 +117,7 @@ public class KenBurnsDrawable extends Drawable implements Animator.AnimatorListe
     }
 
     @Override public void setColorFilter(ColorFilter colorFilter) {
-        // do nothing
+        mColorFilter = colorFilter;
     }
 
     @Override public int getOpacity() {
