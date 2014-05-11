@@ -72,6 +72,8 @@ public class KenBurnsDrawable extends Drawable implements Animator.AnimatorListe
             d.setBounds(0, 0, mWidth, mHeight);
     }
 
+    public boolean isAnimating() { return mAnimate; }
+
     public void animate() {
         mAnimator = createAnimator();
         mAnimator.start();

@@ -657,7 +657,8 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
         if (mViewBackground == null)
             return;
 
-        if (mViewBackground instanceof KenBurnsDrawable && !mKenBurnsInitialized) {
+        if (mViewBackground instanceof KenBurnsDrawable &&
+                !((KenBurnsDrawable) mViewBackground).isAnimating()) {
             mViewBackground.setBounds(0, 0, getWidth(), getHeight());
             ((KenBurnsDrawable) mViewBackground).animate();
             mKenBurnsInitialized = true;
