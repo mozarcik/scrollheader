@@ -3,26 +3,41 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.11.+'
+        classpath 'com.android.tools.build:gradle:1.2.3'
     }
 }
-apply plugin: 'android-library'
+
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 
 repositories {
     mavenCentral()
-    mavenLocal()
+}
+
+def getVersionName = { ->
+    def stdout = new ByteArrayOutputStream()
+    exec {
+        commandLine 'git', 'describe', '--tags', '--dirty'
+        standardOutput = stdout
+    }
+    return stdout.toString().trim()
 }
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.1.0"
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
 
     defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 19
+        minSdkVersion 16
+        targetSdkVersion 22
     }
     lintOptions {
         abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
 
@@ -32,3 +47,21 @@ dependencies{
     compile 'com.android.support:support-v4:+'
 
 }
+
+version getVersionName()
+group 'pl.motyczko'
+
+android.libraryVariants
+publishing {
+    repositories {
+        maven {
+            url mvn_publish_path
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            artifact bundleRelease
+        }
+    }
+}
+
