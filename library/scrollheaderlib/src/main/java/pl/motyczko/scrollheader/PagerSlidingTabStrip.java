@@ -270,7 +270,6 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
         setupIcon();
 
-        a.recycle();
         mPageScrollHelper = new PageScrollHelper(this);
         mPageScrollHelper.setPageScrollListener(mPageScrollListener);
 
